@@ -1,0 +1,6 @@
+.idea/
+.vscode/
+vendor/
+.gtm/
+docs/_build/
+/composer.lock
