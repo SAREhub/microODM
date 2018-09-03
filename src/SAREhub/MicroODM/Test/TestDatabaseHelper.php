@@ -24,8 +24,10 @@ use MongoDB\Client;
 use SAREhub\Commons\Misc\EnvironmentHelper;
 use SAREhub\MicroODM\Client\ClientFactory;
 use SAREhub\MicroODM\Client\ClientOptions;
+use SAREhub\MicroODM\DatabaseManager;
+use SAREhub\MicroODM\Schema\DatabaseSchema;
 
-class DatabaseHelper
+class TestDatabaseHelper
 {
     const ENV_HOST = "TEST_DATABASE_HOST";
     const ENV_PORT = "TEST_DATABASE_PORT";
@@ -37,28 +39,24 @@ class DatabaseHelper
     const DEFAULT_PASSWORD = "test";
 
     /**
-     * @var string
-     */
-    private $databasePrefix;
-
-    /**
      * @var Client
      */
     private $client;
 
     /**
-     * @param string $databasePrefix
+     * @var DatabaseManager
      */
-    public function __construct(string $databasePrefix)
+    private $databaseManager;
+
+    public function __construct(string $databasePrefix = "test")
     {
-        $this->databasePrefix = $databasePrefix;
-        $this->client = self::createClient(self::getTestClientOptions());
+        $this->client = self::createTestClient();
+        $this->databaseManager = new DatabaseManager($this->client, $databasePrefix);
     }
 
-    public static function createClient(ClientOptions $options): Client
+    public static function createTestClient(): Client
     {
-        $factory = new ClientFactory();
-        return $factory->create($options);
+        return self::createClient(self::getTestClientOptions());
     }
 
     public static function getTestClientOptions(): ClientOptions
@@ -68,6 +66,29 @@ class DatabaseHelper
             ->withPort(EnvironmentHelper::getRequiredVar(self::ENV_PORT))
             ->withUser(EnvironmentHelper::getVar(self::ENV_USER, self::DEFAULT_USER))
             ->withPassword(EnvironmentHelper::getVar(self::ENV_PASSWORD, self::DEFAULT_PASSWORD));
+    }
+
+    public static function createClient(ClientOptions $options): Client
+    {
+        $factory = new ClientFactory();
+        return $factory->create($options);
+    }
+
+    public function createDatabase(string $name, DatabaseSchema $schema)
+    {
+        $this->databaseManager->create($name, $schema);
+    }
+
+    public function dropDatabases(): void
+    {
+        foreach ($this->databaseManager->getList() as $name) {
+            $this->databaseManager->drop($name);
+        }
+    }
+
+    public function getDatabaseManager(): DatabaseManager
+    {
+        return $this->databaseManager;
     }
 
     public function getClient(): Client

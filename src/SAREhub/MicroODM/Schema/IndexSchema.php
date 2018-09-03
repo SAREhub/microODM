@@ -18,24 +18,34 @@
  *
  */
 
-namespace SAREhub\MicroODM\Client;
+namespace SAREhub\MicroODM\Schema;
 
-use PHPUnit\Framework\TestCase;
-use SAREhub\MicroODM\Test\TestDatabaseHelper;
 
-class DatabasePingCheckerITest extends TestCase
+class IndexSchema
 {
-    public function testExecuteWhenHostExists()
+    /**
+     * @var array
+     */
+    private $key;
+
+    /**
+     * @var array
+     */
+    private $options;
+
+    public function __construct(array $keys, array $options = [])
     {
-        $client = TestDatabaseHelper::createTestClient();
-        $checker = new DatabasePingChecker($client);
-        $this->assertTrue($checker->execute());
+        $this->key = $keys;
+        $this->options = $options;
     }
 
-    public function testExecuteWhenHostNotExists()
+    public function getKey(): array
     {
-        $client = TestDatabaseHelper::createClient(ClientOptions::newInstance()->withHost("not_exists_host"));
-        $checker = new DatabasePingChecker($client);
-        $this->assertFalse($checker->execute());
+        return $this->key;
+    }
+
+    public function getOptions(): array
+    {
+        return $this->options;
     }
 }
